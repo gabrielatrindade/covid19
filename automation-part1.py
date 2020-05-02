@@ -85,9 +85,34 @@ covid_countries = covid_countries_reorder[['dateRep', 'datetime', 'cases_at', 'c
                                            'geoId', 'countries', 'countryCode', 'continent',
                                            'cases', 'deaths', 'cases_cumsum', 'deaths_cumsum']]
 
+# comparing old and new dataset to get update information
+columns_name = ['dateRep', 'datetime', 'cases_at', 'case_ordinalDay', 'geoId',
+                'countries', 'countryCode', 'continent', 'cases', 
+                'deaths', 'cases_cumsum', 'deaths_cumsum']
+
+covid_countries_old = pd.read_csv('/home/gtrindadi/covid-19/covid-19.csv', names=columns_name)
+
+covid_countries_old['datetime'] = pd.to_datetime(covid_countries_old['datetime'])
+covid_countries_old['cases_at'] = pd.to_datetime(covid_countries_old['cases_at'])
+
+new_data = pd.concat([covid_countries_old, covid_countries]).drop_duplicates(keep=False)
+
+data_insert = new_data.drop_duplicates(subset=['dateRep', 'case_ordinalDay', 'geoId', 'countries'], keep=False)
+
+data_update = pd.concat([data_insert, new_data]).drop_duplicates(keep=False)
+
+data_update = data_update.drop_duplicates(['dateRep', 'datetime', 'cases_at', 'case_ordinalDay',
+                                           'geoId', 'countries', 'countryCode', 'continent'],
+                                          keep='last')
+
 # dataframe to csv
 covid_countries.to_csv(r'/home/gtrindadi/covid-19/covid-19.csv', index=False, header=False)
 
-# getting the today data
+# getting the today and update data
 covid_today = covid_countries[covid_countries.datetime == today]
 covid_today.to_csv(r'/home/gtrindadi/covid-19/covid-19-today.csv', index=False, header=False)
+
+data_update.to_csv(r'/home/gtrindadi/covid-19/covid-19-update.csv', index=False, header=False)
+
+data_insert = data_insert[data_insert.datetime != today]
+data_insert.to_csv(r'/home/gtrindadi/covid-19/covid-19-insert.csv', index=False, header=False)
