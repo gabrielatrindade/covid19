@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 # getting the data
 today = datetime.strftime(datetime.today(),'%Y-%m-%d')
 
-url = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv'
-covid_countries = pd.read_csv(url)
+url = 'https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-'
+covid_countries = pd.read_excel(url+today+'.xlsx')
 
 # preparing dataframe
 
@@ -92,12 +92,15 @@ columns_name = ['dateRep', 'datetime', 'cases_at', 'case_ordinalDay', 'geoId',
 
 covid_countries_old = pd.read_csv('/home/gtrindadi/covid-19/covid-19.csv', names=columns_name)
 
+covid_countries_old['dateRep'] = pd.to_datetime(covid_countries_old['dateRep'])
 covid_countries_old['datetime'] = pd.to_datetime(covid_countries_old['datetime'])
 covid_countries_old['cases_at'] = pd.to_datetime(covid_countries_old['cases_at'])
 
 new_data = pd.concat([covid_countries_old, covid_countries]).drop_duplicates(keep=False)
 
-data_insert = new_data.drop_duplicates(subset=['dateRep', 'case_ordinalDay', 'geoId', 'countries'], keep=False)
+data_insert = new_data.drop_duplicates(subset=['dateRep', 'datetime', 'case_ordinalDay', 
+                                               'countries', 'continent'], 
+                                       keep=False)
 
 data_update = pd.concat([data_insert, new_data]).drop_duplicates(keep=False)
 
