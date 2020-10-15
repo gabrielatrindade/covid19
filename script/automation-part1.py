@@ -64,7 +64,7 @@ covid_countries = covid_countries[['dateRep', 'datetime', 'cases_at',
 
 # Correcting country name
 covid_countries = covid_countries.replace('Bonaire Saint Eustatius and Saba', 
-                                          'Bonaire, Sint Eustatius, and Saba')
+                                          'Bonaire Sint Eustatius and Saba')
 
 covid_countries = covid_countries.replace('Falkland Islands (Malvinas)',
                                           'Falkland Islands')
@@ -159,10 +159,18 @@ data_insert.to_csv(r'/home/gtrindadi/covid-19/data/covid-19-insert.csv', index=F
 ########################################################################
 ## Brazil
 ########################################################################
+import pandas as pd
+from datetime import datetime, timedelta
+import requests
+import io
+import gzip
 
 # getting the data
 url = 'https://data.brasil.io/dataset/covid19/caso.csv.gz'
-covid_bra = pd.read_csv(url)
+response = requests.get(url)
+bytes_io = io.BytesIO(response.content)
+with gzip.open(bytes_io, 'rt') as read_file:
+    covid_bra = pd.read_csv(read_file)
 
 
 # preparing the dataframe
@@ -179,14 +187,10 @@ covid_bra_states = covid_bra[covid_bra.place_type == 'state']
 
 covid_bra_states = covid_bra_states.drop(columns='city')
 
-covid_bra_cities = covid_bra[covid_bra.place_type == 'city']
+#covid_bra_cities = covid_bra[covid_bra.place_type == 'city']
 
 # Reordering the dataframes
 covid_bra_states = (covid_bra_states.groupby('state')
-                        .apply(lambda x: x.sort_values('date', ascending=True))
-                        .reset_index(drop=True))
-
-covid_bra_cities = (covid_bra_cities.groupby(['state', 'city'])
                         .apply(lambda x: x.sort_values('date', ascending=True))
                         .reset_index(drop=True))
 
@@ -206,30 +210,17 @@ covid_bra_states = covid_bra_states_set_index.reset_index()
 
 covid_bra_states[['cases_per_day', 'deaths_per_day']] = covid_bra_states[['cases_per_day', 'deaths_per_day']].astype(int)
 
-# Creating diff columns in covid_bra_cities
-covid_bra_cities['cases_per_day'] = covid_bra_cities.groupby('state')['confirmed'].diff()
-covid_bra_cities['deaths_per_day'] = covid_bra_cities.groupby('state')['deaths'].diff()
-
-first_cases_city = (covid_bra_cities.groupby(['state','city'])
-                        [['order_for_place', 'confirmed', 'deaths']]
-                        .min())
-
-first_cases_city = (first_cases_city.rename(columns={'confirmed': 'cases_per_day', 
-                                                     'deaths': 'deaths_per_day'})
-                        .reset_index()
-                        .set_index(['state', 'city','order_for_place']))
-
-covid_bra_cities_set_index = covid_bra_cities.set_index(['state', 'city', 'order_for_place'])
-covid_bra_cities_set_index.update(first_cases_city)
-covid_bra_cities = covid_bra_cities_set_index.reset_index()
-
-covid_bra_cities[['cases_per_day', 'deaths_per_day']] = covid_bra_cities[['cases_per_day', 'deaths_per_day']].astype(int)
-
 # Adding state_code column in covid_bra_states
 covid_bra_states['state_code'] = 'BR-' +  covid_bra_states['state'].astype(str)
 
 # Creating csv files with prepared dataset
 covid_bra.to_csv(r'~/covid-19/data/covid-19-bra.csv', index=False, header=False)
 covid_bra_states.to_csv(r'~/covid-19/data/covid-19-bra-states.csv', index=False, header=False)
-covid_bra_cities.to_csv(r'~/covid-19/data/covid-19-bra-cities.csv', index=False, header=False)
+#covid_bra_cities.to_csv(r'~/covid-19/data/covid-19-bra-cities.csv', index=False, header=False)
 
+yesterday = datetime.strftime(datetime.today() - timedelta(1),'%Y-%m-%d')
+covid_bra[covid_bra.date == yesterday].to_csv(r'~/covid-19/data/covid-19-bra-today.csv', 
+                                          index=False, header=False)
+(covid_bra_states[covid_bra_states.date == yesterday]
+     .to_csv(r'~/covid-19/data/covid-19-bra-states-today.csv', 
+             index=False, header=False))
