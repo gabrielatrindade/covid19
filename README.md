@@ -4,7 +4,7 @@ This project has the final goal to create a report with COVID19 data taken from 
 The first dataset was used to see the number of cases and deaths around the world. On the other hand, Brasil.IO API was used to get data from Brazil in state level, as ECDC does not provide information on this level.
 
 ❗️<b>Important: </b><br>
-I'm not an epidemiologist, virologist or even work on health area. I'm just exploring data, learning how do that using Python, SQL, and Google Data Studio. So I'll not draw conclusions on that level nor base behavior or policy upon these explorations and neither should you.
+I'm not an epidemiologist, virologist or even work on health area. I'm just exploring data, learning how to do that using Python, SQL, and Google Data Studio. So I'll not draw conclusions on that level nor base behavior or policy upon these explorations and neither should you.
 
 ## Tasks
 - Getting the data and load it into dataframes
