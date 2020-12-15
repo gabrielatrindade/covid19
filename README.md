@@ -28,3 +28,4 @@ I'm not an epidemiologist, virologist or even work on health area. I'm just expl
 - [ ] Use PEP8
 
 ## Process Workflow
+![Process Workflow](process_workflow.jpeg)
